@@ -17,43 +17,42 @@
     </div>
 
     <script>
-      const API_BASE = '';
+  async function loadPokemonIndex() {
+    const valueEl = document.getElementById('pmi-value');
+    const sentEl = document.getElementById('pmi-sentiment');
+    const updEl = document.getElementById('pmi-updated');
 
-      async function loadPokemonIndex() {
-        try {
-          const resp = await fetch(API_BASE + '/api/index');
-          if (!resp.ok) throw new Error('Failed to load index');
-          const data = await resp.json();
+    try {
+      const resp = await fetch('/api/index'); // always same host
+      if (!resp.ok) throw new Error('API returned ' + resp.status);
+      const data = await resp.json();
 
-          const valueEl = document.getElementById('pmi-value');
-          const sentEl = document.getElementById('pmi-sentiment');
-          const updEl = document.getElementById('pmi-updated');
+      valueEl.textContent = data.index;
 
-          valueEl.textContent = data.index;
+      let color = '#fbbf24';
+      let label = 'Neutral';
 
-          let color = '#fbbf24';
-          let label = 'Neutral';
-
-          if (data.sentiment === 'bullish') {
-            color = '#22c55e';
-            label = 'Bullish';
-          } else if (data.sentiment === 'bearish') {
-            color = '#ef4444';
-            label = 'Bearish';
-          }
-
-          valueEl.style.color = color;
-          sentEl.textContent = `Market sentiment: ${label}`;
-          updEl.textContent = `Updated: ${new Date(data.updatedAt).toLocaleString()}`;
-        } catch (e) {
-          const sentEl = document.getElementById('pmi-sentiment');
-          sentEl.textContent = 'Error loading index';
-          sentEl.style.color = '#ef4444';
-        }
+      if (data.sentiment === 'bullish') {
+        color = '#22c55e';
+        label = 'Bullish';
+      } else if (data.sentiment === 'bearish') {
+        color = '#ef4444';
+        label = 'Bearish';
       }
 
-      loadPokemonIndex();
-      setInterval(loadPokemonIndex, 5 * 60 * 1000); // refresh every 5 min
-    </script>
+      valueEl.style.color = color;
+      sentEl.textContent = `Market sentiment: ${label}`;
+      updEl.textContent = `Updated: ${new Date(data.updatedAt).toLocaleString()}`;
+      sentEl.style.color = '#000';
+    } catch (e) {
+      console.error('Widget error:', e);
+      sentEl.textContent = 'Error loading index';
+      sentEl.style.color = '#ef4444';
+    }
+  }
+
+  loadPokemonIndex();
+  setInterval(loadPokemonIndex, 5 * 60 * 1000); // refresh every 5 min
+</script>
   </body>
 </html>
