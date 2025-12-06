@@ -1,0 +1,59 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Pokémon Market Index</title>
+  </head>
+  <body>
+    <div id="pokemon-index-widget"
+         style="border:1px solid #ddd;padding:12px;border-radius:8px;
+                max-width:320px;font-family:-apple-system,system-ui,Roboto,sans-serif;">
+      <div style="font-size:14px;font-weight:600;margin-bottom:8px;">
+        Pokémon Market Index
+      </div>
+      <div id="pmi-value" style="font-size:28px;font-weight:700;">--</div>
+      <div id="pmi-sentiment" style="margin-top:4px;font-size:14px;">Loading…</div>
+      <div id="pmi-updated" style="margin-top:4px;font-size:11px;color:#666;"></div>
+    </div>
+
+    <script>
+      const API_BASE = 'http://localhost:3000';
+
+      async function loadPokemonIndex() {
+        try {
+          const resp = await fetch(API_BASE + '/api/index');
+          if (!resp.ok) throw new Error('Failed to load index');
+          const data = await resp.json();
+
+          const valueEl = document.getElementById('pmi-value');
+          const sentEl = document.getElementById('pmi-sentiment');
+          const updEl = document.getElementById('pmi-updated');
+
+          valueEl.textContent = data.index;
+
+          let color = '#fbbf24';
+          let label = 'Neutral';
+
+          if (data.sentiment === 'bullish') {
+            color = '#22c55e';
+            label = 'Bullish';
+          } else if (data.sentiment === 'bearish') {
+            color = '#ef4444';
+            label = 'Bearish';
+          }
+
+          valueEl.style.color = color;
+          sentEl.textContent = `Market sentiment: ${label}`;
+          updEl.textContent = `Updated: ${new Date(data.updatedAt).toLocaleString()}`;
+        } catch (e) {
+          const sentEl = document.getElementById('pmi-sentiment');
+          sentEl.textContent = 'Error loading index';
+          sentEl.style.color = '#ef4444';
+        }
+      }
+
+      loadPokemonIndex();
+      setInterval(loadPokemonIndex, 5 * 60 * 1000); // refresh every 5 min
+    </script>
+  </body>
+</html>
